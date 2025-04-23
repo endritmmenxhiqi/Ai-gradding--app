@@ -1,0 +1,21 @@
+name: Basic CI for AI-Grading App
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout Repository
+      uses: actions/checkout@v3
+      
+    - name: Shfaq përmbajtjen e projektit
+      run: |
+        echo "Përmbajtja e repository-t:"
+        ls -la
+        echo "CI për AI-Grading App u krye me sukses!"
