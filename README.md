@@ -1,7 +1,7 @@
 # AI-Grading App
 
 ## Project Description
-AI-Grading App është një platformë që përdor inteligjencën artificiale për të vlerësuar automatikisht detyrat e studentëve. Qëllimi i saj është të ofrojë një sistem të drejtë, të shpejtë dhe efikas për vlerësimin dhe feedback-un e detyrave, duke ulur ngarkesën e mësimdhënësve.
+AI-Grading App është një platformë e cila përdor inteligjencën artificiale për të vlerësuar automatikisht detyrat e studentëve. Qëllimi i saj është të ofrojë një sistem të drejtë, të shpejtë dhe efikas për vlerësimin dhe feedback-un e detyrave, duke ulur ngarkesën e mësimdhënësve.
 
 ## Team Members
 Endrit Menxhiqi Frontend Development
