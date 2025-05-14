@@ -1,0 +1,23 @@
+Sprint 2 Plan
+Sprint Goal
+Implementimi i menaxhimit të lëndëve nga ana e administratorit.
+
+Sprint Duration
+1 week (May 8 – May 15, 2025)
+
+Selected User Stories
+Subject Management (HIGH)
+
+Krijimi i modelit të lëndës
+
+Shtimi i lëndëve të reja nga admini
+
+Lidhja e lëndës me profesorin
+
+Fshirja e lëndëve nga admini
+
+View Subjects (MEDIUM)
+
+Shfaqja e të gjitha lëndëve në backend
+
+
