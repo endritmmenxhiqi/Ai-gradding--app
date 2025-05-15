@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <form id="loginForm">
+    <input type="email" id="email" placeholder="Email" required>
+    <input type="password" id="password" placeholder="Fjalëkalim" required>
+    <button type="submit">Hyr</button>
+    <div class="links">
+      <a href="register.html">Regjistrohu këtu</a>
+      <a href="forgot-password.html">Harruat fjalëkalimin?</a>
+    </div>
+  </form>
+
+  <script>
+    document.getElementById('loginForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      
+      const data = {
+        email: document.getElementById('email').value,
+        password: document.getElementById('password').value
+      };
+
+      try {
+        const response = await fetch('http://localhost:5000/api/login', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(data)
+        });
+        
+        const result = await response.json();
+        alert(result.msg);
+
+        if (result.token) {
+          localStorage.setItem('token', result.token);
+          localStorage.setItem('role', result.role);
+          
+          // Redirektimi bazuar në rol
+          switch(result.role) {
+            case 'admin':
+              window.location.href = 'admin-dashboard.html';
+              break;
+            case 'professor':
+              window.location.href = 'professor-dashboard.html';
+              break;
+            case 'student':
+              window.location.href = 'student-dashboard.html'; // Ose student-dashboard sipas nevojës
+              break;
+            default:
+              alert('Roli i panjohur!');
+          }
+        }
+      } catch (error) {
+        alert('Gabim në hyrje');
+      }
+    });
+  </script>
+</body>
+</html>

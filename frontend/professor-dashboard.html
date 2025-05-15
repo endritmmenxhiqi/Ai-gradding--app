@@ -1,0 +1,320 @@
+<!DOCTYPE html>
+<html lang="sq">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Profesor Dashboard</title>
+  <link rel="stylesheet" href="style.css">
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #f4f4f9;
+      margin: 0;
+      padding: 0;
+    }
+
+    h1 {
+      text-align: center;
+      margin-top: 30px;
+      color: #4CAF50;
+    }
+
+    button {
+      padding: 10px 20px;
+      background-color: #4CAF50;
+      color: white;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+      margin-bottom: 20px;
+    }
+
+    button:hover {
+      background-color: #45a049;
+    }
+
+    .section {
+      background: white;
+      padding: 20px;
+      border-radius: 10px;
+      margin: 20px auto;
+      max-width: 900px;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    }
+
+    .submissions-modal {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.5);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+
+    .modal-content {
+      background: white;
+      padding: 20px;
+      border-radius: 10px;
+      max-width: 600px;
+      width: 90%;
+      max-height: 80vh;
+      overflow-y: auto;
+    }
+
+    .assignment-item {
+      background: #f8f9fa;
+      padding: 15px;
+      margin: 10px 0;
+      border-radius: 8px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .view-submissions-btn {
+      background: #4CAF50;
+      color: white;
+      border: none;
+      padding: 8px 16px;
+      border-radius: 4px;
+      cursor: pointer;
+    }
+
+    .view-submissions-btn:hover {
+      background-color: #45a049;
+    }
+
+    .grade-btn {
+      background: #2196F3;
+      color: white;
+      padding: 6px 12px;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+    }
+
+    .grade-btn:hover {
+      background-color: #1976D2;
+    }
+  </style>
+</head>
+<body>
+
+  <h1>Mirësevini, Profesor!</h1>
+  <button onclick="location.href='login.html'">Shkyçu</button>
+
+  <!-- Subject Selection -->
+  <div class="section">
+    <h2>Lëndët e Mia</h2>
+    <select id="subjectSelect">
+      <option value="" disabled selected>Zgjidhni Lëndën</option>
+    </select>
+  </div>
+
+  <!-- Assignment Creation -->
+  <div class="section" id="assignmentSection" style="display: none;">
+    <h2>Krijo Detyrë të Re</h2>
+    <form id="createAssignmentForm">
+      <input type="text" id="assignmentTitle" placeholder="Titulli" required>
+      <textarea id="assignmentDescription" placeholder="Përshkrimi"></textarea>
+      <input type="datetime-local" id="assignmentDeadline" required>
+      <textarea id="assignmentCriteria" placeholder="Kriteret e Vlerësimit" required></textarea>
+      <button type="submit">Krijo Detyrën</button>
+    </form>
+    <div id="assignmentMessage"></div>
+  </div>
+
+  <!-- Assignments List -->
+  <div class="section" id="assignmentsList" style="display: none;">
+    <h2>Detyrat</h2>
+    <div id="assignmentsContainer"></div>
+  </div>
+
+  <script>
+    // Load Professor's Subjects
+    async function loadSubjects() {
+      const professorId = localStorage.getItem('userId');
+      try {
+        const response = await fetch(`http://localhost:5000/api/subjects?professor=${professorId}`);
+        const subjects = await response.json();
+        const select = document.getElementById('subjectSelect');
+        select.innerHTML = '<option value="" disabled selected>Zgjidhni Lëndën</option>';
+        subjects.forEach(subject => {
+          const option = document.createElement('option');
+          option.value = subject._id;
+          option.textContent = subject.name;
+          select.appendChild(option);
+        });
+      } catch (error) {
+        console.error('Gabim në ngarkimin e lëndëve:', error);
+      }
+    }
+
+    // Handle Subject Selection
+    document.getElementById('subjectSelect').addEventListener('change', async (e) => {
+      const subjectId = e.target.value;
+      if (subjectId) {
+        document.getElementById('assignmentSection').style.display = 'block';
+        document.getElementById('assignmentsList').style.display = 'block';
+        await loadAssignments(subjectId);
+      } else {
+        document.getElementById('assignmentSection').style.display = 'none';
+        document.getElementById('assignmentsList').style.display = 'none';
+      }
+    });
+
+    // Load Assignments
+    async function loadAssignments(subjectId) {
+      try {
+        const response = await fetch(`http://localhost:5000/api/assignments/subject/${subjectId}`);
+        const assignments = await response.json();
+        const container = document.getElementById('assignmentsContainer');
+        container.innerHTML = '';
+        
+        assignments.forEach(assignment => {
+          const div = document.createElement('div');
+          div.className = 'assignment-item';
+          div.innerHTML = `
+            <div>
+              <h3>${assignment.title}</h3>
+              <p>Afati: ${new Date(assignment.deadline).toLocaleString()}</p>
+            </div>
+            <button class="view-submissions-btn" data-id="${assignment._id}">Shiko Dorëzimet</button>
+          `;
+          container.appendChild(div);
+        });
+
+        // Add event listeners for submissions
+        document.querySelectorAll('.view-submissions-btn').forEach(btn => {
+          btn.addEventListener('click', (e) => {
+            const assignmentId = e.target.dataset.id;
+            viewSubmissions(assignmentId);
+          });
+        });
+      } catch (error) {
+        console.error('Gabim në ngarkimin e detyrave:', error);
+      }
+    }
+
+    // Handle Assignment Creation
+    document.getElementById('createAssignmentForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const subjectId = document.getElementById('subjectSelect').value;
+      const formData = {
+        title: document.getElementById('assignmentTitle').value,
+        description: document.getElementById('assignmentDescription').value,
+        deadline: document.getElementById('assignmentDeadline').value,
+        criteria: document.getElementById('assignmentCriteria').value,
+        subjectId: subjectId
+      };
+
+      try {
+        const response = await fetch('http://localhost:5000/api/assignments', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(formData)
+        });
+
+        const result = await response.json();
+        const messageDiv = document.getElementById('assignmentMessage');
+        if (response.ok) {
+          messageDiv.style.color = 'green';
+          messageDiv.textContent = 'Detyra u krijua me sukses!';
+          document.getElementById('createAssignmentForm').reset();
+          await loadAssignments(subjectId);
+        } else {
+          messageDiv.style.color = 'red';
+          messageDiv.textContent = result.msg || 'Gabim në krijimin e detyrës';
+        }
+      } catch (error) {
+        document.getElementById('assignmentMessage').textContent = 'Gabim në server';
+        document.getElementById('assignmentMessage').style.color = 'red';
+      }
+    });
+
+    // View Submissions
+    async function viewSubmissions(assignmentId) {
+      try {
+        const response = await fetch(`http://localhost:5000/api/submissions/assignment/${assignmentId}`);
+        const submissions = await response.json();
+        showSubmissionsModal(submissions);
+      } catch (error) {
+        console.error('Gabim:', error);
+      }
+    }
+
+    function showSubmissionsModal(submissions) {
+      const modal = document.createElement('div');
+      modal.className = 'submissions-modal';
+      modal.innerHTML = `
+        <div class="modal-content">
+          <h2>Dorëzimet</h2>
+          ${submissions.map(sub => ` 
+            <div class="submission-item">
+              <h4>${sub.student.firstName} ${sub.student.lastName}</h4>
+              <p>Nota AI: ${sub.aiGrade || 'N/A'}</p>
+              ${sub.professorGrade ? `<p>Nota Profesori: ${sub.professorGrade}</p>` : ''}
+              <button class="grade-btn" data-id="${sub._id}">Rishiko</button>
+            </div>
+          `).join('')}
+          <button onclick="this.closest('.submissions-modal').remove()">Mbylle</button>
+        </div>
+      `;
+      modal.querySelectorAll('.grade-btn').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+          const submissionId = e.target.dataset.id;
+          showGradeForm(submissionId);
+        });
+      });
+      document.body.appendChild(modal);
+    }
+
+    function showGradeForm(submissionId) {
+      const modal = document.createElement('div');
+      modal.className = 'submissions-modal';
+      modal.innerHTML = `
+        <div class="modal-content">
+          <h3>Ndrysho Notën</h3>
+          <form id="gradeForm">
+            <input type="number" id="gradeInput" step="0.1" placeholder="Nota" required>
+            <textarea id="commentInput" placeholder="Koment"></textarea>
+            <button type="submit">Ruaj</button>
+          </form>
+        </div>
+      `;
+      modal.querySelector('form').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const grade = document.getElementById('gradeInput').value;
+        const comment = document.getElementById('commentInput').value;
+
+        try {
+          const response = await fetch(`http://localhost:5000/api/submissions/${submissionId}`, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              grade,
+              comment
+        })
+      });
+      const result = await response.json();
+      if (response.ok) {
+        alert('Nota u ndryshua!');
+        modal.remove();
+      } else {
+        alert('Gabim: ' + result.msg);
+      }
+    } catch (error) {
+      console.error('Gabim:', error);
+    }
+  });
+
+  document.body.appendChild(modal);
+}
+
+loadSubjects(); // Fillo ngarkimin e lëndëve
+</script>
+ </body> 
+</html>

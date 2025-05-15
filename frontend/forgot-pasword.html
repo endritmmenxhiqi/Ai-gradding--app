@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <form id="forgotForm">
+    <input type="email" id="email" placeholder="Email" required>
+    <button type="submit">Dërgo Linkun</button>
+    <div class="links">
+      <a href="login.html">Hyrja</a>
+      <a href="register.html">Regjistrohu</a>
+    </div>
+  </form>
+
+  <script>
+    document.getElementById('forgotForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const email = document.getElementById('email').value;
+
+      try {
+        const response = await fetch('http://localhost:5000/api/forgot-password', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email })
+        });
+        const result = await response.json();
+        alert(result.msg);
+      } catch (error) {
+        alert('Gabim në dërgimin e linkut');
+      }
+    });
+  </script>
+</body>
+</html>
