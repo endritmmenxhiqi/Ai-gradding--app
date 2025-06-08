@@ -1,0 +1,265 @@
+<!DOCTYPE html>
+<html lang="sq">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin Dashboard - Modern</title>
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet">
+  <style>
+    :root {
+      --primary: #29447E;
+      --primary-dark: #29447E;
+      --light: #f8f9fc;
+      --dark: #5a5c69;
+      --text: #343a40;
+      --white: #fff;
+      --danger: #e74a3b;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      font-family: 'Segoe UI', sans-serif;
+      background-color: var(--light);
+      color: var(--text);
+      display: flex;
+      height: 100vh;
+    }
+
+    .sidebar {
+      background-color: var(--primary);
+      color: var(--white);
+      width: 260px;
+      padding: 60px 20px 30px;
+      display: flex;
+      flex-direction: column;
+      position: relative;
+      box-shadow: 2px 0 10px rgba(0, 0, 0, 0.1);
+    }
+
+    .sidebar h2 {
+      text-align: center;
+      margin-bottom: 40px;
+      font-size: 24px;
+    }
+
+    .sidebar a {
+      color: white;
+      text-decoration: none;
+      font-size: 18px;
+      font-weight: 500;
+      padding: 14px 16px;
+      border-radius: 8px;
+      margin-bottom: 14px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      transition: all 0.3s ease;
+    }
+
+    .sidebar a:hover {
+      background-color: var(--primary-dark);
+      transform: translateX(5px);
+    }
+
+    .main-content {
+      flex: 1;
+      padding: 60px 40px;
+      overflow-y: auto;
+    }
+
+    .card {
+      display: none;
+      background-color: white;
+      padding: 30px;
+      border-radius: 12px;
+      box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
+    }
+
+    .card.active {
+      display: block;
+      animation: fadeIn 0.3s ease-in-out;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    label, input, select, button {
+      display: block;
+      width: 100%;
+      margin-bottom: 20px;
+      font-size: 16px;
+    }
+
+    input, select {
+      padding: 12px;
+      border: 1px solid #ccc;
+      border-radius: 6px;
+      font-size: 16px;
+    }
+
+    button.submit-btn {
+      background-color: var(--primary);
+      color: white;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      padding: 12px 0;
+      font-weight: 600;
+      transition: background-color 0.3s ease;
+    }
+
+    button.submit-btn:hover {
+      background-color: var(--primary-dark);
+    }
+
+    .subject-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background: #f1f2f6;
+      padding: 15px 20px;
+      margin-bottom: 12px;
+      border-radius: 8px;
+    }
+
+    .subject-item button {
+      background-color: var(--danger);
+      color: white;
+      border: none;
+      padding: 8px 14px;
+      border-radius: 6px;
+      cursor: pointer;
+    }
+
+    .subject-item button:hover {
+      opacity: 0.9;
+    }
+
+    /* Heqja e tabulateve dhe butonave të tjerë */
+    .tabs {
+      display: none; /* Heqim seksionin 'tabs' që është për navigimin e brendshëm */
+    }
+  </style>
+</head>
+<body>
+  <div class="sidebar">
+    <h2>AI-Grading</h2>
+    <a href="#" onclick="showSection('add')"><i class="fas fa-plus-circle"></i> Shto Lëndë</a>
+    <a href="#" onclick="showSection('delete')"><i class="fas fa-trash"></i> Fshij Lëndë</a>
+    <a href="#" onclick="logout()"><i class="fas fa-sign-out-alt"></i> Dil</a>
+  </div>
+
+  <div class="main-content">
+    <h1>Paneli i Administratorit</h1>
+
+    <div id="add" class="card active">
+      <label for="professorSelect">Zgjedh Profesorin:</label>
+      <select id="professorSelect"></select>
+
+      <input type="text" id="subjectName" placeholder="Emri i lëndës" />
+      <button class="submit-btn" onclick="addSubject()">Shto Lëndë</button>
+      <p id="message"></p>
+    </div>
+
+    <div id="delete" class="card">
+      <div id="subjectList"></div>
+    </div>
+  </div>
+
+  <script>
+    const token = localStorage.getItem("token");
+    if (!token) window.location.href = "login.html";
+
+    function showSection(id) {
+      document.querySelectorAll('.card').forEach(c => c.classList.remove('active'));
+      document.querySelector(`#${id}`).classList.add('active');
+      if (id === 'delete') loadSubjects(); // Kur shfaqet seksioni për fshirjen, ngarko lëndët
+    }
+
+    function logout() {
+      localStorage.removeItem("token");
+      window.location.href = "login.html";
+    }
+
+    async function loadProfessors() {
+      const res = await fetch('http://localhost:5000/api/admin/professors', {
+        headers: { Authorization: token }
+      });
+      const data = await res.json();
+      const select = document.getElementById('professorSelect');
+      select.innerHTML = '';
+      data.forEach(p => {
+        const opt = document.createElement('option');
+        opt.value = p._id;
+        opt.textContent = p.name;
+        select.appendChild(opt);
+      });
+    }
+
+    async function loadSubjects() {
+      const res = await fetch('http://localhost:5000/api/admin/subjects', {
+        headers: { Authorization: token }
+      });
+      const data = await res.json();
+      const list = document.getElementById("subjectList");
+      list.innerHTML = '';
+      data.forEach(sub => {
+        const div = document.createElement("div");
+        div.className = "subject-item";
+        div.innerHTML = `<span><strong>${sub.name}</strong> (Prof: ${sub.professor.name})</span>
+                         <button onclick="deleteSubject('${sub._id}')">Fshi</button>`;
+        list.appendChild(div);
+      });
+    }
+
+    async function addSubject() {
+      const professorId = document.getElementById("professorSelect").value;
+      const subjectName = document.getElementById("subjectName").value;
+      const msg = document.getElementById("message");
+
+      if (!subjectName) {
+        msg.style.color = "red";
+        msg.textContent = "Ju lutem shkruani emrin e lëndës.";
+        return;
+      }
+
+      const res = await fetch("http://localhost:5000/api/admin/subjects", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: token
+        },
+        body: JSON.stringify({ name: subjectName, professorId })
+      });
+
+      const data = await res.json();
+      if (res.ok) {
+        msg.style.color = "green";
+        msg.textContent = "Lënda u shtua me sukses!";
+        document.getElementById("subjectName").value = '';
+      } else {
+        msg.style.color = "red";
+        msg.textContent = data.error || "Gabim gjatë shtimit";
+      }
+    }
+
+    async function deleteSubject(id) {
+      if (!confirm("A je i sigurt?")) return;
+      const res = await fetch(`http://localhost:5000/api/admin/subjects/${id}`, {
+        method: "DELETE",
+        headers: { Authorization: token }
+      });
+      if (res.ok) loadSubjects();
+      else alert("Gabim gjatë fshirjes");
+    }
+
+    loadProfessors();
+  </script>
+</body>
+</html>

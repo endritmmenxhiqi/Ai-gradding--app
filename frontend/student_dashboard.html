@@ -1,0 +1,365 @@
+<!DOCTYPE html>
+<html lang="sq">
+<head>
+  <meta charset="UTF-8">
+  <title>Dashboardi i Studentit</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+  <style>
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: 'Segoe UI', sans-serif;
+      background-color: #eef0f4;
+      display: flex;
+    }
+    .sidebar {
+      width: 280px;
+      background-color: #29447E;
+      color: white;
+      height: 100vh;
+      padding: 30px 20px;
+      position: fixed;
+      left: 0;
+      top: 0;
+      display: flex;
+      flex-direction: column;
+    }
+    .sidebar h2 {
+      font-size: 24px;
+      font-weight: bold;
+      text-align: center;
+      margin-bottom: 40px;
+    }
+    .sidebar ul {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+      flex-grow: 1;
+    }
+    .sidebar ul li {
+      color:white;
+      font-size: 18px;
+      font-weight: 500;
+      margin: 30px 0;
+      padding:12px 16px;
+      border-radius:10px;
+      text-decoration: none;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      transition: background-color 0.3s, transform 0.2s;
+    }
+    .sidebar ul li i {
+    font-size: 18px;
+    min-width: 20px;
+    }
+    .sidebar ul li:hover {
+      background-color: #1e3264;
+      transform: translateX(5px);
+    }
+    .main {
+      margin-left: 240px;
+      padding: 30px;
+      width: calc(100% - 240px);
+    }
+    .section {
+      background: white;
+      padding: 30px;
+      margin: 30px auto;
+      border-radius: 12px;
+      box-shadow: 0 0 10px rgba(0,0,0,0.08);
+      width: 95%;
+      min-height: calc(100vh - 60px);
+      display: none;
+    }
+    h2 {
+      text-align: center;
+      margin-bottom: 20px;
+    }
+    select, input, textarea, button {
+      width: 100%;
+      padding: 10px;
+      margin: 10px 0;
+      border-radius: 6px;
+      border: 1px solid #ccc;
+    }
+    button {
+      background-color: #29447E;
+      color: white;
+      cursor: pointer;
+    }
+    button:hover {
+      background-color: #1e3264;
+    }
+    .assignment {
+      border: 1px solid #ccc;
+      padding: 12px;
+      border-radius: 6px;
+      margin-top: 10px;
+      background-color: #f9f9f9;
+    }
+    .note {
+      font-weight: bold;
+      color: green;
+    }
+    .card-container {
+      display: flex;
+      gap: 30px;
+      flex-wrap: wrap;
+      justify-content: center;
+      margin-top: 20px;
+    }
+    .card {
+      background-color: white;
+      border-radius: 16px;
+      box-shadow: 0 6px 18px rgba(0,0,0,0.1);
+      padding: 30px 20px;
+      width: 240px;
+      text-align: center;
+      cursor: pointer;
+      transition: transform 0.3s ease;
+      border: none;
+    }
+    .card:hover {
+      transform: translateY(-5px);
+      background-color:  #f0f4ff;
+    }
+    .card i {
+    font-size: 26px;
+    margin-bottom: 12px;
+    color: #29447E;
+    }
+    .card h3 {
+    margin-bottom: 8px;
+    font-size: 18px;
+    color: #1a1a1a;
+    }
+    .card p {
+      color: #555;
+      font-size: 14px;
+    }
+  </style>
+</head>
+<body onload="showOnlySection('homeSection')">
+
+  <div class="sidebar">
+    <h2>AI-Grading</h2>
+    <ul>
+      <li onclick="showOnlySection('homeSection')"><i class="fas fa-home"></i> Kryefaqja</li>
+      <li onclick="showOnlySection('activeSection')"><i class="fas fa-tasks"></i> Detyrat Aktive</li>
+      <li onclick="showOnlySection('submittedSection')"><i class="fas fa-file-alt"></i> Detyrat e Dorëzuara</li>
+      <li onclick="showOnlySection('pastSection')"><i class="fas fa-archive"></i> Detyrat e Kaluara</li>
+      <li onclick="showOnlySection('gradesSection')"><i class="fas fa-graduation-cap"></i> Notat</li>
+      <a href="login.html"><li onclick="logout()"><i class="fas fa-sign-out-alt"></i> Dil</li></a>
+    </ul>
+  </div>
+
+  <div class="main">
+    <!-- KRYEFAQJA -->
+    <div class="section" id="homeSection" style="display: block;">
+      <h2>Kryefaqja</h2>
+      <div class="card-container">
+        <div class="card" onclick="showOnlySection('activeSection')">
+          <i class="fas fa-tasks fa-2x" style="color: #29447E;"></i>
+          <h3>Detyrat Aktive</h3>
+          <p>Shfaq dhe dorëzo detyrat e hapura.</p>
+        </div>
+        <div class="card" onclick="showOnlySection('submittedSection')">
+          <i class="fas fa-file-alt fa-2x" style="color: #29447E;"></i>
+          <h3>Detyrat e Dorëzuara</h3>
+          <p>Shiko notat dhe komentet e AI-së.</p>
+        </div>
+        <div class="card" onclick="showOnlySection('pastSection')">
+          <i class="fas fa-archive fa-2x" style="color: #29447E;"></i>
+          <h3>Detyrat e Kaluara</h3>
+          <p>Detyrat që kanë kaluar afatin e dorëzimit.</p>
+        </div>
+        <div class="card" onclick="showOnlySection('gradesSection')">
+          <i class="fas fa-graduation-cap fa-2x" style="color: #29447E;"></i>
+          <h3>Notat</h3>
+          <p>Shfaq notat për secilën lëndë.</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Detyrat Aktive -->
+    <div class="section" id="activeSection">
+      <h2>Detyrat Aktive</h2>
+      <select class="subjectSelect" data-target="active"></select>
+      <button onclick="loadAssignments('active')">Shfaq Detyrat</button>
+      <div id="activeAssignments"></div>
+    </div>
+
+    <!-- Detyrat e Dorëzuara -->
+    <div class="section" id="submittedSection">
+      <h2>Detyrat e Dorëzuara</h2>
+      <select class="subjectSelect" data-target="submitted"></select>
+      <button onclick="loadAssignments('submitted')">Shfaq Detyrat</button>
+      <div id="submittedAssignments"></div>
+    </div>
+
+    <!-- Detyrat e Kaluara -->
+    <div class="section" id="pastSection">
+      <h2>Detyrat e Kaluara</h2>
+      <select class="subjectSelect" data-target="past"></select>
+      <button onclick="loadAssignments('past')">Shfaq Detyrat</button>
+      <div id="pastAssignments"></div>
+    </div>
+
+    <!-- Notat -->
+    <div class="section" id="gradesSection">
+      <h2>Notat për Lëndën</h2>
+      <select id="gradesSubject"></select>
+      <button onclick="loadGrades()">Shfaq Notat</button>
+      <div id="gradesList"></div>
+    </div>
+  </div>
+
+  <script>
+    const token = localStorage.getItem("token");
+
+    function showOnlySection(id) {
+      document.querySelectorAll('.section').forEach(s => s.style.display = 'none');
+      document.getElementById(id).style.display = 'block';
+    }
+
+    async function loadSubjects() {
+      const res = await fetch('http://localhost:5000/api/student/subjects', {
+        headers: { Authorization: token }
+      });
+      const data = await res.json();
+
+      document.querySelectorAll('.subjectSelect').forEach(select => {
+        select.innerHTML = '';
+        data.forEach(s => {
+          if (s && s._id && s.name) {
+            const opt = document.createElement('option');
+            opt.value = s._id;
+            opt.textContent = s.name;
+            select.appendChild(opt);
+          }
+        });
+      });
+
+      const gradesSelect = document.getElementById('gradesSubject');
+      if (gradesSelect) {
+        gradesSelect.innerHTML = '';
+        data.forEach(s => {
+          if (s && s._id && s.name) {
+            const opt = document.createElement('option');
+            opt.value = s._id;
+            opt.textContent = s.name;
+            gradesSelect.appendChild(opt);
+          }
+        });
+      }
+    }
+
+    async function loadAssignments(section) {
+      const subjectId = document.querySelector(`select[data-target="${section}"]`).value;
+      const res = await fetch(`http://localhost:5000/api/student/assignments/${subjectId}`, {
+        headers: { Authorization: token }
+      });
+      const data = await res.json();
+      const now = new Date();
+      const container = document.getElementById(section + 'Assignments');
+      container.innerHTML = '';
+
+      data.forEach(a => {
+        const deadline = new Date(a.assignment.deadline);
+        const div = document.createElement('div');
+        div.className = 'assignment';
+        div.innerHTML = `
+          <strong>${a.assignment.title}</strong><br>
+          Afati: ${deadline.toLocaleDateString()}<br>
+          Përshkrimi: ${a.assignment.description}<br><br>
+        `;
+        if (section === 'active' && !a.submitted && deadline > now) {
+          div.innerHTML += `
+            <textarea placeholder="Përgjigjja juaj..." id="text-${a.assignment._id}"></textarea>
+            <button onclick="submitAssignment('${a.assignment._id}', '${subjectId}')">Dorëzo</button>
+          `;
+        } else if (section === 'submitted' && a.submitted) {
+          div.innerHTML += `
+            <p>Nota: <span class="note">${a.grade || 'N/A'}</span></p>
+            <p><strong>Komenti i AI-së:</strong> ${a.aiComment || 'Nuk ka koment'}</p>
+            <textarea placeholder="Shkruaj ankesë..." id="complaint-${a._id}"></textarea>
+            <button onclick="submitComplaint('${a._id}')">Dërgo Ankesë</button>
+          `;
+        }
+        container.appendChild(div);
+      });
+    }
+
+    async function submitAssignment(assignmentId, subjectId) {
+      const text = document.getElementById(`text-${assignmentId}`).value;
+      await fetch('http://localhost:5000/api/student/submit', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: token
+        },
+        body: JSON.stringify({ assignmentId, subjectId, text })
+      });
+      loadAssignments('active');
+    }
+
+    async function submitComplaint(submissionId) {
+      const text = document.getElementById(`complaint-${submissionId}`).value;
+      await fetch(`http://localhost:5000/api/student/complaint/${submissionId}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: token
+        },
+        body: JSON.stringify({ complaint: text })
+      });
+      loadAssignments('submitted');
+    }
+
+    async function loadGrades() {
+      const subjectId = document.getElementById('gradesSubject').value;
+      const res = await fetch(`http://localhost:5000/api/student/grades/${subjectId}`, {
+        headers: { Authorization: token }
+      });
+      const data = await res.json();
+      const container = document.getElementById('gradesList');
+      container.innerHTML = '';
+
+      const grades = data.grades || [];
+
+      if (!grades.length) {
+        container.innerHTML = '<p>Nuk ka nota për këtë lëndë.</p>';
+        return;
+      }
+
+      grades.forEach(g => {
+        const div = document.createElement('div');
+        div.className = 'assignment';
+        div.innerHTML = `
+          <strong>${g.assignmentTitle}</strong><br>
+          Nota: <span class="note">${g.grade || 'N/A'}</span><br>
+          Komenti i AI-së: ${g.aiComment || 'Nuk ka koment'}
+        `;
+        container.appendChild(div);
+      });
+       // Shto mesataren poshtë
+  if (data.average !== null) {
+    const avgDiv = document.createElement('div');
+    avgDiv.className = 'assignment';
+    avgDiv.innerHTML = `<strong>Mesatarja :</strong> ${data.average}`;
+    container.appendChild(avgDiv);
+  }
+    }
+
+    function logout() {
+      localStorage.removeItem("token");
+      window.location.href = "/login.html";
+    }
+
+    window.onload = () => {
+      loadSubjects();
+    };
+  </script>
+</body>
+</html>

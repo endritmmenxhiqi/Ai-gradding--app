@@ -1,11 +1,15 @@
+// backend/config/db.js
 const mongoose = require('mongoose');
 
 const connectDB = async () => {
   try {
-    await mongoose.connect(process.env.MONGO_URI || 'mongodb://localhost:27017/grading-system');
-    console.log('MongoDB connected');
-  } catch (error) {
-    console.error('Connection error:', error.message);
+    await mongoose.connect(process.env.MONGO_URI, {
+      useNewUrlParser: true,
+      useUnifiedTopology: true
+    });
+    console.log("✅ MongoDB connected");
+  } catch (err) {
+    console.error("❌ Error connecting DB", err.message);
     process.exit(1);
   }
 };

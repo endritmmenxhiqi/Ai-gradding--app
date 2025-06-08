@@ -1,57 +1,218 @@
 <!DOCTYPE html>
-<html>
+<html lang="sq">
 <head>
-  <link rel="stylesheet" href="style.css">
-  <title>Regjistrohu</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Regjistrimi</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    }
+
+    body {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      background: #e6ebf4;
+    }
+
+    .container {
+      width: 900px;
+      height: 620px;
+      display: flex;
+      background: white;
+      border-radius: 12px;
+      box-shadow: 0 15px 30px rgba(0, 0, 0, 0.1);
+      overflow: hidden;
+    }
+
+    .left-panel {
+      flex: 1;
+      background: linear-gradient(to bottom, #36598C, #1e3264);
+      color: white;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      padding: 50px 30px;
+    }
+
+    .left-panel h1 {
+      font-size: 42px;
+      margin-bottom: 15px;
+      letter-spacing: 1px;
+    }
+
+    .left-panel p {
+      font-size: 17px;
+      text-align: center;
+      line-height: 1.6;
+    }
+
+    .right-panel {
+      flex: 1;
+      padding: 60px 40px;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      position: relative;
+    }
+
+    .right-panel h2 {
+      font-size: 30px;
+      color: #1e3264;
+      margin-bottom: 25px;
+      font-weight: 600;
+    }
+
+    form {
+      width: 100%;
+      max-width: 450px; /* Rritur gjerësia e container-it */
+      display: flex;
+      flex-direction: column;
+    }
+
+    input, select {
+      padding: 14px;
+      margin-bottom: 18px;
+      border: 1px solid #ccc;
+      border-radius: 8px;
+      font-size: 15px;
+      background-color: #f4f7fb;
+      transition: border-color 0.3s ease;
+    }
+
+    input:focus, select:focus {
+      border-color: #36598C;
+      outline: none;
+    }
+
+    button {
+      padding: 14px;
+      background-color: #36598C;
+      color: white;
+      border: none;
+      border-radius: 8px;
+      font-weight: bold;
+      font-size: 16px;
+      cursor: pointer;
+      transition: background 0.3s ease;
+    }
+
+    button:hover {
+      background-color: #274372;
+    }
+
+    #message {
+      margin-top: 10px;
+      font-size: 14px;
+      text-align: center;
+    }
+
+    .right-panel a {
+      display: block;
+      text-align: center;
+      margin-top: 10px;
+      font-size: 14px;
+      color: #36598C;
+      text-decoration: none;
+    }
+
+    .right-panel a:hover {
+      text-decoration: underline;
+    }
+
+    /* Animations */
+    .right-panel a,
+    .right-panel h2 {
+      opacity: 0;
+      animation: fadeIn 0.5s forwards;
+    }
+
+    .right-panel a {
+      animation-delay: 0.5s;
+    }
+
+    .right-panel h2 {
+      animation-delay: 0s;
+    }
+
+    @keyframes fadeIn {
+      to {
+        opacity: 1;
+      }
+    }
+
+  </style>
 </head>
 <body>
-  <form id="registerForm">
-    <input type="text" id="firstName" placeholder="Emri" required>
-    <input type="text" id="lastName" placeholder="Mbiemri" required>
-    <input type="email" id="email" placeholder="Email" required>
-    <input type="password" id="password" placeholder="Fjalëkalim" required>
-    <input type="password" id="confirmPassword" placeholder="Konfirmo fjalëkalimin" required>
-    <select id="role">
-      <option value="student">Student</option>
-      <option value="professor">Profesor</option>
-      <option value="admin">Admin</option>
-    </select>
-    <button type="submit">Regjistrohu</button>
-
-    <!-- Lidhjet për Login dhe Forgot Password -->
-    <div class="links">
-      <a href="login.html">Keni llogari? Hyni këtu</a>
-      <a href="forgot-password.html">Harruat fjalëkalimin?</a>
+  <div class="container">
+    <div class="left-panel">
+      <h1>AI-GRADING</h1>
+      <p>Platforma juaj inteligjente për<br>notim të automatizuar dhe<br>menaxhim të studentëve.</p>
     </div>
-  </form>
+    <div class="right-panel">
+      <h2>Regjistrohu</h2>
+      <form id="registerForm">
+        <input type="text" id="name" placeholder="Emri" required />
+        <input type="email" id="email" placeholder="Email" required />
+        <input type="password" id="password" placeholder="Fjalëkalimi" required />
+        <input type="password" id="confirmPassword" placeholder="Konfirmo fjalëkalimin" required />
+        <select id="role" required>
+          <option value="student">Student</option>
+          <option value="professor">Profesor</option>
+          <option value="admin">Admin</option>
+        </select>
+        <button type="submit">Regjistrohu</button>
+        <p id="message"></p>
+      </form>
+      <div class="redirect-link">
+        <p>Keni llogari? <a href="login.html">Kyçuni këtu!</a></p>
+      </div>
+    </div>
+  </div>
 
   <script>
-    document.getElementById('registerForm').addEventListener('submit', async (e) => {
+    document.getElementById("registerForm").addEventListener("submit", async (e) => {
       e.preventDefault();
-      
-      const data = {
-        firstName: document.getElementById('firstName').value,
-        lastName: document.getElementById('lastName').value,
-        email: document.getElementById('email').value,
-        password: document.getElementById('password').value,
-        role: document.getElementById('role').value
-      };
 
-      if (data.password !== document.getElementById('confirmPassword').value) {
-        alert('Fjalëkalimet nuk përputhen!');
+      const name = document.getElementById("name").value;
+      const email = document.getElementById("email").value;
+      const password = document.getElementById("password").value;
+      const confirmPassword = document.getElementById("confirmPassword").value;
+      const role = document.getElementById("role").value;
+      const msg = document.getElementById("message");
+
+      // Verifikimi që password == confirmPassword
+      if (password !== confirmPassword) {
+        msg.style.color = "red";
+        msg.textContent = "Fjalëkalimet nuk përputhen.";
         return;
       }
 
       try {
-        const response = await fetch('http://localhost:5000/api/register', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(data)
+        const res = await fetch("http://localhost:5000/api/auth/register", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ name, email, password, role }),
         });
-        const result = await response.json();
-        alert(result.msg);
-      } catch (error) {
-        alert('Gabim në regjistrim');
+
+        const data = await res.json();
+
+        if (res.ok) {
+          msg.style.color = "green";
+          msg.textContent = "Regjistrimi u krye me sukses!";
+        } else {
+          msg.style.color = "red";
+          msg.textContent = data.error || "Gabim gjatë regjistrimit";
+        }
+      } catch (err) {
+        msg.style.color = "red";
+        msg.textContent = "Gabim në rrjet";
       }
     });
   </script>

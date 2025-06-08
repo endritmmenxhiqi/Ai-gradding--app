@@ -1,0 +1,728 @@
+<!DOCTYPE html>
+<html lang="sq">
+<head>
+  <meta charset="UTF-8">
+  <title>AI-Grading</title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet">
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background-color: #f5f7fa;
+      display: flex;
+      height: 100vh;
+      overflow: hidden;
+    }
+
+    /* Sidebar */
+    .sidebar {
+      background-color: #29447E;
+      color: white;
+      width: 280px;
+      padding: 30px 20px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      height: 100%;
+      box-shadow: 2px 0 15px rgba(0, 0, 0, 0.1);
+      z-index: 100;
+    }
+
+    .sidebar h2 {
+      text-align: center;
+      font-size: 28px;
+      margin-bottom: 50px;
+      font-weight: bold;
+      color: #fff;
+    }
+
+    .sidebar a {
+      color: white;
+      font-size: 18px;
+      font-weight: 500;
+      margin: 12px 0;
+      padding: 12px;
+      border-radius: 8px;
+      text-decoration: none;
+      display: flex;
+      align-items: center;
+      transition: background-color 0.3s, transform 0.3s;
+    }
+
+    .sidebar a:hover {
+      background-color: #1e3264;
+      transform: translateX(5px);
+    }
+
+    .sidebar a i {
+      margin-right: 10px;
+    }
+
+    /* Main content */
+    .main-content {
+      flex: 1;
+      padding: 40px;
+      background-color: white;
+      margin-left: 20px;
+      border-radius: 10px;
+      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+      overflow-y: auto;
+      height: 100%;
+    }
+
+    /* Cards View */
+    #cards-view {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+      gap: 30px;
+      padding: 20px;
+    }
+
+    .card {
+      background: white;
+      padding: 30px 20px;
+      border-radius: 12px;
+      box-shadow: 0 2px 12px rgba(0,0,0,0.08);
+      text-align: center;
+      transition: transform 0.2s ease, box-shadow 0.3s ease;
+      cursor: pointer;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      height: 100%;
+      border: 1px solid #eaeaea;
+    }
+
+    .card:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 8px 20px rgba(0,0,0,0.12);
+    }
+
+    .card i {
+      font-size: 48px;
+      color: #29447E;
+      margin-bottom: 20px;
+    }
+
+    .card h3 {
+      font-size: 22px;
+      margin-bottom: 12px;
+      color: #111;
+    }
+
+    .card p {
+      font-size: 16px;
+      color: #555;
+      line-height: 1.5;
+    }
+
+    /* Sections */
+    .section {
+      background: white;
+      padding: 25px;
+      margin-bottom: 30px;
+      border-radius: 10px;
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+      display: none;
+    }
+
+    h2 {
+      color: #333;
+      margin-bottom: 20px;
+      font-size: 28px;
+      font-weight: 600;
+    }
+
+    select, input, textarea, button {
+      width: 100%;
+      padding: 12px;
+      margin: 12px 0;
+      border-radius: 6px;
+      border: 1px solid #ccc;
+      font-size: 16px;
+    }
+
+    button {
+      background-color: #29447E;
+      color: white;
+      cursor: pointer;
+      border: none;
+      font-size: 16px;
+      font-weight: 600;
+      transition: background-color 0.3s ease;
+      padding: 14px;
+    }
+
+    button:hover {
+      background-color: #1e3264;
+    }
+
+    .subject-item button {
+      background-color: #e74a3b;
+      padding: 8px 16px;
+      color: white;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+    }
+
+    .subject-item button:hover {
+      opacity: 0.9;
+    }
+
+    .submission button {
+      background-color: #1e3264;
+      color: white;
+    }
+
+    .submission button:hover {
+      opacity: 0.9;
+    }
+
+    @media (max-width: 768px) {
+      body {
+        flex-direction: column;
+      }
+
+      .sidebar {
+        width: 100%;
+        height: auto;
+        box-shadow: none;
+        padding: 20px;
+      }
+
+      .main-content {
+        margin-left: 0;
+        padding: 20px;
+      }
+
+      .sidebar h2 {
+        font-size: 22px;
+        margin-bottom: 30px;
+      }
+
+      #cards-view {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Sidebar -->
+  <div class="sidebar">
+    <h2>AI-Grading</h2>
+    <a href="#" onclick="showSection('home')"><i class="fas fa-home"></i> Kryefaqja</a>
+    <a href="#" onclick="showSection('createAssignment')"><i class="fas fa-plus-circle"></i> Krijo Detyrë</a>
+    <a href="#" onclick="showSection('viewAssignments')"><i class="fas fa-tasks"></i> Detyrat e Mia</a>
+    <a href="#" onclick="showSection('viewSubmissions')"><i class="fas fa-upload"></i> Dorëzimet</a>
+    <a href="#" onclick="showSection('generateReport')"><i class="fas fa-file-pdf"></i> Gjenero Raport</a>
+    <a href="#" onclick="showSection('generateSubjectReport')"><i class="fas fa-chart-bar"></i> Raport për Lëndë</a>
+    <a href="#" onclick="showSection('manageStudents')"><i class="fas fa-users-cog"></i> Menaxho Studentët</a>
+    <a href="#" onclick="logout()"><i class="fas fa-sign-out-alt"></i> Dil</a>
+  </div>
+
+  <!-- Main content -->
+  <div class="main-content">
+    <!-- Cards View -->
+    <div id="cards-view">
+      <div class="card" onclick="showSection('createAssignment')">
+        <i class="fas fa-plus-circle"></i>
+        <h3>Krijo Detyrë</h3>
+        <p>Krijoni një detyrë të re për lëndët tuaja</p>
+      </div>
+      
+      <div class="card" onclick="showSection('viewAssignments')">
+        <i class="fas fa-tasks"></i>
+        <h3>Detyrat e Mia</h3>
+        <p>Shfaq detyrat që keni krijuar më parë</p>
+      </div>
+      
+      <div class="card" onclick="showSection('viewSubmissions')">
+        <i class="fas fa-upload"></i>
+        <h3>Dorëzimet e Studentëve</h3>
+        <p>Shikoni dhe vlerësoni dorëzimet</p>
+      </div>
+      
+      <div class="card" onclick="showSection('generateReport')">
+        <i class="fas fa-file-pdf"></i>
+        <h3>Gjenero Raport</h3>
+        <p>Krijo PDF me notat e studentëve</p>
+      </div>
+      
+      <div class="card" onclick="showSection('generateSubjectReport')">
+        <i class="fas fa-chart-bar"></i>
+        <h3>Raport për Lëndë</h3>
+        <p>Notat mesatare për secilën lëndë</p>
+      </div>
+      
+      <div class="card" onclick="showSection('manageStudents')">
+        <i class="fas fa-users-cog"></i>
+        <h3>Menaxho Studentët</h3>
+        <p>Regjistro ose largo studentë nga lëndët</p>
+      </div>
+    </div>
+
+    <!-- Krijo Detyrë -->
+    <div id="createAssignment" class="section">
+      <h2>Krijo Detyrë</h2>
+      <select id="subjectSelect"></select>
+      <input type="text" id="assignmentTitle" placeholder="Titulli i Detyrës" />
+      <textarea id="assignmentDesc" placeholder="Përshkrimi i Detyrës"></textarea>
+      <input type="date" id="assignmentDeadline" />
+      <input type="text" id="assignmentCriteria" placeholder="Kriteret e Vlerësimit" />
+      <button onclick="createAssignment()">Krijo Detyrë</button>
+      <p id="message"></p>
+    </div>
+
+    <!-- Detyrat e Mia -->
+    <div id="viewAssignments" class="section">
+      <h2>Detyrat e Mia</h2>
+      <select id="taskSubjectSelect"></select>
+      <div id="assignmentList"></div>
+    </div>
+
+    <!-- Dorëzimet e Studentëve -->
+    <div id="viewSubmissions" class="section">
+      <h2>Dorëzimet e Studentëve</h2>
+      <select id="reviewSubjectSelect" onchange="loadReviewAssignments()"></select>
+      <select id="reviewAssignmentSelect">
+        <option value="">Të gjitha detyrat</option>
+      </select>
+      <button onclick="loadSubmissions()">Shfaq Dorëzimet</button>
+      <div id="submissionList"></div>
+    </div>
+
+    <!-- Gjenero Raport -->
+    <div id="generateReport" class="section">
+      <h2>Gjenero Raport</h2>
+      <select id="reportSubjectSelect"></select>
+      <input type="text" id="studentName" placeholder="Emri i Studentit (Opsional)" />
+      <button onclick="generateReport()">Gjenero PDF</button>
+    </div>
+
+    <!-- Raport për Lëndë -->
+    <div id="generateSubjectReport" class="section">
+      <h2>Gjenero Raport për Lëndë</h2>
+      <select id="subjectDropdownFullReport" style="width: 100%; padding: 10px; margin: 10px 0;">
+        <option value="">Zgjedh një lëndë</option>
+      </select>
+      <button onclick="generateSubjectReport()" style="width: 100%; padding: 10px; background-color: #29447E; color: white; border: none; border-radius: 5px; font-weight: bold;">
+        Gjenero Raport për Lëndë
+      </button>
+    </div>
+
+    <!-- Menaxho Studentët -->
+    <div id="manageStudents" class="section">
+      <h2>Menaxho Studentët në Lëndë</h2>
+      <select id="enrollSubjectSelect"></select>
+      <select id="studentSelect"></select>
+      <button onclick="enrollStudent()">Regjistro Student</button>
+      <button onclick="unenrollStudent()">Fshi Studentin nga Lënda</button>
+      <p id="enrollMessage"></p>
+    </div>
+  </div>
+
+  <script>
+    const token = localStorage.getItem("token");
+
+    // Funksioni për shfaqjen e seksioneve të ndryshme
+    function showSection(sectionId) {
+      // Fsheh të gjitha seksionet dhe kartat
+      document.getElementById('cards-view').style.display = 'none';
+      document.querySelectorAll('.section').forEach(section => {
+        section.style.display = 'none';
+      });
+
+      // Shfaq seksionin e zgjedhur ose kartat nëse është 'home'
+      if (sectionId === 'home') {
+        document.getElementById('cards-view').style.display = 'grid';
+      } else {
+        document.getElementById(sectionId).style.display = 'block';
+      }
+      
+      // Ngarko të dhënat nëse është e nevojshme
+      if (sectionId === 'viewAssignments') {
+        loadAssignments();
+      } else if (sectionId === 'viewSubmissions') {
+        loadReviewAssignments();
+      }
+    }
+
+    // Funksioni për logout
+    function logout() {
+      localStorage.removeItem("token");
+      window.location.href = "login.html";
+    }
+
+    // Ngarko lëndët
+    async function loadSubjects() {
+      const res = await fetch('http://localhost:5000/api/professor/subjects', {
+        headers: { Authorization: token }
+      });
+      const data = await res.json();
+      ['subjectSelect', 'taskSubjectSelect', 'reviewSubjectSelect', 'reportSubjectSelect', 'enrollSubjectSelect', 'subjectDropdownFullReport'].forEach(id => {
+        const sel = document.getElementById(id);
+        if (sel) {
+          sel.innerHTML = '';
+          const defaultOption = document.createElement('option');
+          defaultOption.value = '';
+          defaultOption.textContent = id === 'subjectDropdownFullReport' ? 'Zgjedh një lëndë' : 'Zgjedh një lëndë';
+          sel.appendChild(defaultOption);
+          
+          data.forEach(s => {
+            const opt = document.createElement('option');
+            opt.value = s._id;
+            opt.textContent = s.name;
+            sel.appendChild(opt);
+          });
+        }
+      });
+      loadStudents();
+    }
+
+    // Krijo detyrë
+    async function createAssignment() {
+      const title = document.getElementById("assignmentTitle").value;
+      const description = document.getElementById("assignmentDesc").value;
+      const deadline = document.getElementById("assignmentDeadline").value;
+      const criteria = document.getElementById("assignmentCriteria").value;
+      const subjectId = document.getElementById("subjectSelect").value;
+
+      const res = await fetch("http://localhost:5000/api/professor/assignments", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: token
+        },
+        body: JSON.stringify({ title, description, deadline, criteria, subjectId })
+      });
+
+      const data = await res.json();
+      document.getElementById("message").textContent = res.ok ? "✅ Detyra u krijua!" : data.error || "Gabim!";
+    }
+
+    // Ngarko detyrat
+    async function loadAssignments() {
+      const subjectId = document.getElementById("taskSubjectSelect").value;
+      if (!subjectId) return;
+      const res = await fetch(`http://localhost:5000/api/professor/assignments/${subjectId}`, {
+        headers: { Authorization: token }
+      });
+      const data = await res.json();
+      const list = document.getElementById("assignmentList");
+      list.innerHTML = '';
+      data.forEach(a => {
+        const div = document.createElement("div");
+        div.className = "assignment";
+        div.innerHTML = `
+          <strong>${a.title || 'Titulli jo i disponueshëm'}</strong><br>
+          Afati: ${new Date(a.deadline).toLocaleDateString()}<br>
+          <button onclick="deleteAssignment('${a._id}')">Fshi</button>
+        `;
+        list.appendChild(div);
+      });
+    }
+
+    // Fshi detyrën
+    async function deleteAssignment(id) {
+      if (!confirm("A je i sigurt që dëshiron ta fshish këtë detyrë?")) return;
+      const res = await fetch(`http://localhost:5000/api/professor/assignments/${id}`, {
+        method: 'DELETE',
+        headers: { Authorization: token }
+      });
+      if (res.ok) loadAssignments();
+    }
+
+    // Ngarko dorëzimet e studentëve
+    async function loadSubmissions() {
+      const subjectId = document.getElementById('reviewSubjectSelect').value;
+      const assignmentId = document.getElementById('reviewAssignmentSelect').value;
+
+      let url = 'http://localhost:5000/api/professor/submissions';
+
+      if (subjectId) url += `/${subjectId}`;
+      else url += `/all`;
+
+      if (assignmentId) url += `?assignmentId=${assignmentId}`;
+
+      const res = await fetch(url, {
+        headers: { Authorization: token }
+      });
+
+      const data = await res.json();
+      const container = document.getElementById("submissionList");
+      container.innerHTML = '';
+      if (data.length === 0) {
+        container.innerHTML = `<p>Asnjë dorëzim i disponueshëm.</p>`;
+      } else {
+        data.forEach(s => {
+          const div = document.createElement("div");
+          div.className = "submission";
+          div.innerHTML = `
+            <strong>Student:</strong> ${s.student?.name || 'Emri jo i disponueshëm'}<br>
+            <strong>Detyra:</strong> ${s.assignment?.title || 'Titulli jo i disponueshëm'}<br>
+            <strong>Përgjigja:</strong>
+            <div style="background:#f0f0f0; padding:10px; border-radius:6px; margin:10px 0;">
+              ${s.text || 'Pa përgjigje'}
+            </div>
+            <strong>Nota AI:</strong> ${s.grade || 'N/A'}<br>
+            <p><strong>Komenti i AI-së:</strong> ${s.aiComment || 'Nuk ka koment'}</p>
+            <strong>Ankesë:</strong> ${s.complaint || 'Asnjë'}<br>
+            <input type="number" min="5" max="10" placeholder="Vendos notën..." id="gradeInput_${s._id}" />
+            <button onclick="submitManualGrade('${s._id}')">Vendos Notën</button>
+          `;
+          container.appendChild(div);
+        });
+      }
+    }
+
+    // Gjenero raport PDF - VERSIONI FINAL
+    async function generateReport() {
+      const { jsPDF } = window.jspdf;
+      const doc = new jsPDF();
+      const subjectId = document.getElementById("reportSubjectSelect").value;
+      const studentFilter = document.getElementById("studentName").value.toLowerCase();
+
+      const res = await fetch(`http://localhost:5000/api/professor/report/${subjectId}`, {
+        headers: { Authorization: token }
+      });
+      const data = await res.json();
+
+      let y = 20;
+
+      doc.setFontSize(18);
+      const subjectNameSelect = document.getElementById("reportSubjectSelect");
+      const subjectName = subjectNameSelect.options[subjectNameSelect.selectedIndex].text;
+
+      doc.text("AI-Grading Report Card", 70, y);
+      y += 10;
+      doc.setFontSize(13);
+      doc.text(`Lënda: ${subjectName}`, 14, y);
+      y += 10;
+
+      const filteredStudents = data.filter(s =>
+        !studentFilter || s.student.name.toLowerCase().includes(studentFilter)
+      );
+
+      filteredStudents.forEach((s, index) => {
+        doc.setFontSize(12);
+        doc.setFont(undefined, 'bold');
+        doc.text(`Studenti: ${s.student.name}`, 14, y);
+        y += 8;
+
+        doc.setFont(undefined, 'normal');
+        doc.text("------------------------------------------------------------", 14, y);
+        y += 5;
+
+        doc.setFont(undefined, 'bold');
+        doc.text("Detyra", 14, y);
+        doc.text("Nota", 100, y);
+        doc.text("Komenti i AI-së", 130, y);
+        y += 7;
+
+        doc.setFont(undefined, 'normal');
+        s.grades.forEach(g => {
+          doc.text(g.assignmentTitle || '-', 14, y);
+          const notaShfaqje = g.grade === 0 ? '5' : (g.grade ?? 'N/A').toString();
+          doc.text(notaShfaqje, 100, y);
+
+
+          const comment = g.feedback || '-';
+          const lines = doc.splitTextToSize(comment, 60);
+          lines.forEach(line => {
+            doc.text(line, 130, y);
+            y += 6;
+          });
+
+          y += 2;
+        });
+     
+        // Llogarit mesataren me 5 = 0
+        const filteredGrades = s.grades.map(g => (g.grade === 5 ? 0 : g.grade || 0));
+        const mesatarja = filteredGrades.length > 0
+          ? (filteredGrades.reduce((a, b) => a + b, 0) / filteredGrades.length).toFixed(2)
+          : 'N/A';
+
+        doc.setFont(undefined, 'bold');
+        doc.text(`Mesatarja : ${mesatarja}`, 14, y);
+        y += 10;
+
+        // Kalo në faqe tjetër nëse e tejkalon fundin
+        if (y > 270 && index < filteredStudents.length - 1) {
+          doc.addPage();
+          y = 20;
+        }
+      });
+
+      doc.save("raporti_studentit.pdf");
+    }
+
+    // Ngarko studentët
+    async function loadStudents() {
+      const res = await fetch('http://localhost:5000/api/admin/students', {
+        headers: { Authorization: token }
+      });
+      const data = await res.json();
+      const select = document.getElementById('studentSelect');
+      select.innerHTML = '';
+      data.forEach(s => {
+        const opt = document.createElement('option');
+        opt.value = s._id;
+        opt.textContent = s.name;
+        select.appendChild(opt);
+      });
+    }
+
+    // Regjistro student
+    async function enrollStudent() {
+      const subjectId = document.getElementById('enrollSubjectSelect').value;
+      const studentId = document.getElementById('studentSelect').value;
+      const msg = document.getElementById('enrollMessage');
+
+      const res = await fetch('http://localhost:5000/api/professor/enroll', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: token
+        },
+        body: JSON.stringify({ subjectId, studentId })
+      });
+
+      const data = await res.json();
+      msg.style.color = res.ok ? 'green' : 'red';
+      msg.textContent = data.message || data.error;
+    }
+
+    // Fshi student nga lënda
+    async function unenrollStudent() {
+      const subjectId = document.getElementById('enrollSubjectSelect').value;
+      const studentId = document.getElementById('studentSelect').value;
+      const msg = document.getElementById('enrollMessage');
+
+      const res = await fetch(`http://localhost:5000/api/professor/enroll`, {
+        method: 'DELETE',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: token
+        },
+        body: JSON.stringify({ subjectId, studentId })
+      });
+
+      const data = await res.json();
+      msg.style.color = res.ok ? 'green' : 'red';
+      msg.textContent = data.message || data.error;
+    }
+
+    // Vendos manualisht notën
+    async function submitManualGrade(submissionId) {
+      const input = document.getElementById(`gradeInput_${submissionId}`);
+      const grade = input.value;
+
+      if (!grade || isNaN(grade) || grade < 5 || grade > 10) {
+        alert("Ju lutem vendosni një notë të vlefshme nga 5 deri në 10.");
+        return;
+      }
+
+      const res = await fetch(`http://localhost:5000/api/professor/grade/manual/${submissionId}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: token
+        },
+        body: JSON.stringify({ grade })
+      });
+
+      if (res.ok) {
+        alert("Nota u vendos me sukses!");
+        loadSubmissions();
+      } else {
+        alert("Gabim gjatë vendosjes së notës.");
+      }
+    }
+
+    // Ngarko detyrat për vlerësim
+    async function loadReviewAssignments() {
+      const subjectId = document.getElementById('reviewSubjectSelect').value;
+      const assignmentSelect = document.getElementById('reviewAssignmentSelect');
+      assignmentSelect.innerHTML = '';
+
+      const allOption = document.createElement('option');
+      allOption.value = '';
+      allOption.textContent = 'Të gjitha detyrat';
+      assignmentSelect.appendChild(allOption);
+
+      if (!subjectId) return;
+
+      const res = await fetch(`http://localhost:5000/api/professor/assignments/${subjectId}`, {
+        headers: { Authorization: token }
+      });
+
+      const assignments = await res.json();
+      assignments.forEach(a => {
+        const opt = document.createElement('option');
+        opt.value = a._id;
+        opt.textContent = a.title;
+        assignmentSelect.appendChild(opt);
+      });
+    }
+
+    // Funksioni për gjenerimin e raportit të plotë për lëndë
+    async function generateSubjectReport() {
+      const subjectId = document.getElementById('subjectDropdownFullReport').value;
+      
+      if (!subjectId) {
+        alert("Ju lutem zgjedhni një lëndë.");
+        return;
+      }
+
+      try {
+        const response = await fetch(`http://localhost:5000/api/professor/report/subject/${subjectId}`, {
+          headers: { Authorization: token }
+        });
+        const data = await response.json();
+
+        if (!response.ok) {
+          alert("Gabim gjatë marrjes së të dhënave.");
+          return;
+        }
+
+        const { subjectName, students } = data;
+
+        const { jsPDF } = window.jspdf;
+        const doc = new jsPDF();
+        let y = 20;
+
+        doc.setFontSize(16);
+        doc.text(`Raporti për Lëndën: ${subjectName}`, 20, y);
+        y += 10;
+
+        doc.setFontSize(12);
+        students.forEach((student, index) => {
+          y += 10;
+          doc.text(`${index + 1}. ${student.name} - Nota Mesatare: ${student.averageGrade}`, 20, y);
+        });
+
+        doc.save(`Raport_Lenda_${subjectName}.pdf`);
+      } catch (err) {
+        console.error("Gabim gjatë gjenerimit të raportit:", err);
+        alert("Ndodhi një gabim gjatë gjenerimit të raportit");
+      }
+    }
+
+    // Ngarko lëndët kur faqja hapet
+    window.onload = function() {
+      showSection('home');
+      loadSubjects();
+    };
+  </script>
+
+</body>
+</html>

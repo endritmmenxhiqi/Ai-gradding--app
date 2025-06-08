@@ -1,59 +1,209 @@
 <!DOCTYPE html>
-<html>
+<html lang="sq">
 <head>
-  <link rel="stylesheet" href="style.css">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Login</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    }
+
+    body {
+      height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      background: #e6ebf4;
+    }
+
+    .container {
+      width: 900px;
+      height: 500px;
+      display: flex;
+      background: white;
+      border-radius: 12px;
+      box-shadow: 0 15px 30px rgba(0, 0, 0, 0.1);
+      overflow: hidden;
+    }
+
+    .left-panel {
+      flex: 1;
+      background: linear-gradient(to bottom, #36598C, #1e3264);
+      color: white;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      padding: 50px 30px;
+    }
+
+    .left-panel h1 {
+      font-size: 42px;
+      margin-bottom: 15px;
+      letter-spacing: 1px;
+    }
+
+    .left-panel p {
+      font-size: 17px;
+      text-align: center;
+      line-height: 1.6;
+    }
+
+    .right-panel {
+      flex: 1;
+      padding: 60px 40px;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      position: relative;
+    }
+
+    .right-panel h2 {
+      font-size: 30px;
+      color: #1e3264;
+      margin-bottom: 25px;
+      font-weight: 600;
+    }
+
+    form {
+      width: 100%;
+      max-width: 320px;
+      display: flex;
+      flex-direction: column;
+    }
+
+    input {
+      padding: 14px;
+      margin-bottom: 18px;
+      border: 1px solid #ccc;
+      border-radius: 8px;
+      font-size: 15px;
+      background-color: #f4f7fb;
+      transition: border-color 0.3s ease;
+    }
+
+    input:focus {
+      border-color: #36598C;
+      outline: none;
+    }
+
+    button {
+      padding: 14px;
+      background-color: #36598C;
+      color: white;
+      border: none;
+      border-radius: 8px;
+      font-weight: bold;
+      font-size: 16px;
+      cursor: pointer;
+      transition: background 0.3s ease;
+    }
+
+    button:hover {
+      background-color: #274372;
+    }
+
+    #message {
+      margin-top: 10px;
+      font-size: 14px;
+      text-align: center;
+    }
+
+    .right-panel a {
+      display: block;
+      text-align: center;
+      margin-top: 10px;
+      font-size: 14px;
+      color: #36598C;
+      text-decoration: none;
+    }
+
+    .right-panel a:hover {
+      text-decoration: underline;
+    }
+
+    /* Animations */
+    .right-panel a,
+    .right-panel h2 {
+      opacity: 0;
+      animation: fadeIn 0.5s forwards;
+    }
+
+    .right-panel a {
+      animation-delay: 0.5s;
+    }
+
+    .right-panel h2 {
+      animation-delay: 0s;
+    }
+
+    @keyframes fadeIn {
+      to {
+        opacity: 1;
+      }
+    }
+
+  </style>
 </head>
 <body>
-  <form id="loginForm">
-    <input type="email" id="email" placeholder="Email" required>
-    <input type="password" id="password" placeholder="Fjalëkalim" required>
-    <button type="submit">Hyr</button>
-    <div class="links">
-      <a href="register.html">Regjistrohu këtu</a>
-      <a href="forgot-password.html">Harruat fjalëkalimin?</a>
+  <div class="container">
+    <div class="left-panel">
+      <h1>AI-GRADING</h1>
+      <p>Platforma juaj inteligjente për<br>notim të automatizuar dhe<br>menaxhim të studentëve.</p>
     </div>
-  </form>
+    <div class="right-panel">
+      <h2>Kyçu në llogari</h2>
+      <form id="loginForm">
+        <input type="email" id="email" placeholder="Përdoruesi" required />
+        <input type="password" id="password" placeholder="Fjalëkalimi" required />
+        <button type="submit">QASJA</button>
+        <p id="message"></p>
+        <a href="forgot_pasword.html">Keni harruar fjalëkalimin?</a>
+        <a href="register.html">Nuk keni llogari? Regjistrohu këtu!</a>
+      </form>
+    </div>
+  </div>
 
   <script>
-    document.getElementById('loginForm').addEventListener('submit', async (e) => {
+    document.getElementById("loginForm").addEventListener("submit", async (e) => {
       e.preventDefault();
-      
-      const data = {
-        email: document.getElementById('email').value,
-        password: document.getElementById('password').value
-      };
+
+      const email = document.getElementById("email").value;
+      const password = document.getElementById("password").value;
+      const msg = document.getElementById("message");
 
       try {
-        const response = await fetch('http://localhost:5000/api/login', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(data)
+        const res = await fetch("http://localhost:5000/api/auth/login", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ email, password }),
         });
-        
-        const result = await response.json();
-        alert(result.msg);
 
-        if (result.token) {
-          localStorage.setItem('token', result.token);
-          localStorage.setItem('role', result.role);
-          
-          // Redirektimi bazuar në rol
-          switch(result.role) {
-            case 'admin':
-              window.location.href = 'admin-dashboard.html';
-              break;
-            case 'professor':
-              window.location.href = 'professor-dashboard.html';
-              break;
-            case 'student':
-              window.location.href = 'student-dashboard.html'; // Ose student-dashboard sipas nevojës
-              break;
-            default:
-              alert('Roli i panjohur!');
+        const data = await res.json();
+
+        if (res.ok) {
+          msg.style.color = "green";
+          msg.textContent = "Kyçja u krye me sukses!";
+          localStorage.setItem("token", data.token);
+          localStorage.setItem("role", data.role);
+          if (data.role === "student") {
+            window.location.href = "student_dashboard.html";
+          } else if (data.role === "professor") {
+            window.location.href = "professor_dashboard.html";
+          } else {
+            window.location.href = "admin_dashboard.html";
           }
+        } else {
+          msg.style.color = "red";
+          msg.textContent = data.error || "Email ose fjalëkalim i pasaktë";
         }
-      } catch (error) {
-        alert('Gabim në hyrje');
+      } catch (err) {
+        msg.style.color = "red";
+        msg.textContent = "Gabim në rrjet";
       }
     });
   </script>

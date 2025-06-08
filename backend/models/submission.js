@@ -1,30 +1,38 @@
 const mongoose = require('mongoose');
 
 const submissionSchema = new mongoose.Schema({
-  assignment: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: 'Assignment',
-    required: true
-  },
   student: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'User',
     required: true
   },
-  files: [String], // Paths to uploaded files
-  text: String,
-  aiGrade: Number,
-  aiReport: String,
-  professorGrade: Number,
-  professorComment: String,
-  submittedAt: {
-    type: Date,
-    default: Date.now
+  assignment: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Assignment',
+    required: true
   },
-  contested: {
-    type: Boolean,
-    default: false
+  subject: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Subject',
+    required: true
+  },
+  text: {
+    type: String
+  },
+  grade: {
+    type: Number // nota nga AI
+  },
+  manualGrade: {
+    type: Number // nota e vendosur nga profesori nëse ka ndodhur rivlerësim
+  },
+  complaint: {
+    type: String
+  },
+  aiComment: {
+    type: String // koment i AI në momentin e vlerësimit
   }
+}, {
+  timestamps: true
 });
 
 module.exports = mongoose.model('Submission', submissionSchema);
