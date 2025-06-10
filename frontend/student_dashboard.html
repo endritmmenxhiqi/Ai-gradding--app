@@ -272,7 +272,10 @@
         div.innerHTML = `
           <strong>${a.assignment.title}</strong><br>
           Afati: ${deadline.toLocaleDateString()}<br>
-          Përshkrimi: ${a.assignment.description}<br><br>
+          Përshkrimi: ${a.assignment.description}<br>
+          <strong>Kriteret:</strong><ul>
+             ${(a.assignment.criteria || []).map(k => `<li>${k}</li>`).join('')}
+             </ul> <br>
         `;
         if (section === 'active' && !a.submitted && deadline > now) {
           div.innerHTML += `

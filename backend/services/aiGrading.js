@@ -1,8 +1,12 @@
 const axios = require('axios');
-const apiKey = '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';
+const apiKey = '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';
 
 async function evaluateWithAI(answerText, criteria) {
   try {
+    const formattedCriteria = Array.isArray(criteria)
+      ? criteria.join('\n- ')
+      : `- ${criteria}`;
+
     const response = await axios.post(
       'https://openrouter.ai/api/v1/chat/completions',
       {
@@ -13,7 +17,8 @@ async function evaluateWithAI(answerText, criteria) {
             content: `
 Je një vlerësues AI për detyra studentore. Vlerëso përgjigjen vetëm në bazë të kritereve të mëposhtme:
 
-Kriteret: ${criteria}
+Kriteret:
+${formattedCriteria}
 
 Përcakto nëse përgjigjja është në përputhje me kriteret. Jep një notë nga 5 deri në 10 dhe pastaj një koment të shkurtër që shpjegon pse u dha ajo notë.
 
@@ -31,23 +36,19 @@ Koment: [teksti]`
       {
         headers: {
           'Authorization': `Bearer ${apiKey}`,
-          'Content-Type': 'application/json',
-          'HTTP-Referer': 'https://yourdomain.com',
-          'X-Title': 'ai-grading'
+          'Content-Type': 'application/json'
         }
       }
     );
 
     const content = response.data.choices[0].message.content.trim();
 
-    // Ekstrakto notën dhe komentin
     const gradeMatch = content.match(/Nota:\s*(\d+(\.\d+)?)/i);
     const commentMatch = content.match(/Koment:\s*(.*)/i);
 
     const grade = gradeMatch ? parseFloat(gradeMatch[1]) : NaN;
     const comment = commentMatch ? commentMatch[1].trim() : "Nuk ka koment.";
 
-    // Validimi i notës
     if (isNaN(grade) || grade < 5 || grade > 10) {
       return {
         grade: 5,

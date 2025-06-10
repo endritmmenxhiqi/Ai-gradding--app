@@ -26,7 +26,13 @@ exports.getAssignments = async (req, res) => {
     const response = assignments.map(a => {
       const submitted = submissions.find(s => s.assignment.toString() === a._id.toString());
       return {
-        assignment: a,
+        assignment: {
+          _id: a._id,
+          title: a.title,
+          description: a.description,
+          deadline: a.deadline,
+          criteria: Array.isArray(a.criteria) ? a.criteria : [] // ✅ përfshihet për frontend
+        },
         submitted: !!submitted,
         grade: submitted?.manualGrade ?? submitted?.grade ?? null,
         complaint: submitted?.complaint ?? null,
@@ -52,7 +58,8 @@ exports.submitAssignment = async (req, res) => {
     if (existing) return res.status(400).json({ error: 'Kjo detyrë është dorëzuar tashmë' });
 
     const assignment = await Assignment.findById(assignmentId);
-    const criteria = assignment?.criteria || '';
+    const criteria = assignment?.criteria || [];
+
     const aiEvaluation = await evaluateWithAI(text, criteria);
 
     const submission = new Submission({

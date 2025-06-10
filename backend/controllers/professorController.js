@@ -20,7 +20,20 @@ exports.getSubjectsByProfessor = async (req, res) => {
 exports.createAssignment = async (req, res) => {
   try {
     const { title, description, deadline, criteria, subjectId } = req.body;
-    const assignment = new Assignment({ title, description, deadline, criteria, subject: subjectId });
+
+    // ✅ Sigurohemi që kriteret të ruhen si array
+    const formattedCriteria = Array.isArray(criteria)
+      ? criteria
+      : criteria.split(',').map(c => c.trim());
+
+    const assignment = new Assignment({
+      title,
+      description,
+      deadline,
+      criteria: formattedCriteria,
+      subject: subjectId
+    });
+
     await assignment.save();
     res.status(201).json({ message: 'Detyra u krijua me sukses' });
   } catch (err) {

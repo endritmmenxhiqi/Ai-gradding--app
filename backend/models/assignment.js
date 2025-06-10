@@ -2,15 +2,14 @@ const mongoose = require('mongoose');
 
 const assignmentSchema = new mongoose.Schema({
   title: { type: String, required: true },
-  description: String,
+  description: { type: String },
   deadline: { type: Date, required: true },
-  criteria: { type: String, required: true },
+  criteria: { type: [String], required: true }, // ✅ Lista e kritereve
   subject: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'Subject',
     required: true
   },
-  // Fushtat e reja për përgjigjet e studentëve
   submissions: [
     {
       studentId: {
@@ -19,7 +18,7 @@ const assignmentSchema = new mongoose.Schema({
         required: true
       },
       answer: { type: String, required: true },
-      grade: { type: Number, default: null }, // Nota do të vendoset më vonë nga profesori
+      grade: { type: Number, default: null }, // nota e dhënë nga AI ose profesori
       submittedAt: { type: Date, default: Date.now }
     }
   ]
